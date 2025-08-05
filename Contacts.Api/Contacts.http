@@ -1,0 +1,44 @@
+@Host = http://localhost:5103
+
+POST {{Host}}/api/contacts
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "abduvali@gmail.com",
+  "phoneNumber": "+998901234568",
+}
+###
+
+GET {{Host}}/api/contacts
+###
+
+GET {{Host}}/api/contacts/1
+###
+
+DELETE {{Host}}/api/contacts/1
+###
+
+PUT {{Host}}/api/contacts/2
+Content-Type: application/json
+
+{
+  "firstName": "Abduvali",
+  "lastName": "Mamatov",
+  "email": "abduvali@gmail.com",
+  "phoneNumber": "+998901234567",
+}
+###
+
+PATCH {{Host}}/api/contacts/2
+Content-Type: application/json-patch+json
+
+[
+  {
+    "op": "replace",
+    "path": "/email",
+    "value": "Jahongir@gmail.com"
+  }
+]
+###  
