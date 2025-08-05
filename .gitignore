@@ -1,0 +1,59 @@
+# Build artifacts
+**/bin/
+**/obj/
+*.exe
+*.dll
+*.pdb
+*.cache
+*.log
+
+# VS / Rider / VS Code files
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# NuGet
+*.nupkg
+*.snupkg
+project.lock.json
+project.assets.json
+*.nuspec
+packages/
+*.nuget.props
+*.nuget.targets
+
+# MSBuild artifacts
+*.Build.csdef
+*.csproj.FileListAbsolute.txt
+*.csproj.GenerateResource.cache
+*.csproj.CoreCompileInputs.cache
+*.AssemblyInfo.cs
+*.GeneratedMSBuildEditorConfig.editorconfig
+*.g.cs
+*.g.i.cs
+
+# SQL Server
+*.dbmdl
+
+# Backup & temp
+*.bak
+*.tmp
+*.swp
+
+# Mac & Windows
+.DS_Store
+Thumbs.db
+
+# Test Results
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# ReSharper / dotCover
+_ReSharper*/
+*.DotSettings.user
+*.dotCover
