@@ -25,7 +25,11 @@ public class ContactService(IMapper mapper, IContactRepository repository) : ICo
         => repository.DeleteAsync(id, cancellationToken);
 
     public async ValueTask<Contact> UpdateContactAsync(int id, UpdateContact contact, CancellationToken cancellationToken = default)
-        => mapper.Map<Contact>(await repository.UpdateAsync(id, mapper.Map<Entities.Contact>(contact), cancellationToken));
+    {
+        var entity = await repository.GetSingleAsync(id, cancellationToken);
+        mapper.Map(contact, entity);
+        return mapper.Map<Contact>(await repository.UpdateAsync(entity, cancellationToken));
+    }
 
     public ValueTask<bool> ExistsAsync(string phoneNumber, CancellationToken cancellationToken = default)
         => repository.ExistsAsync(phoneNumber, cancellationToken);

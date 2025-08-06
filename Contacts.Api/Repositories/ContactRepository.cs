@@ -1,60 +1,63 @@
+using Contacts.Api.Data;
 using Contacts.Api.Entities;
 using Contacts.Api.Exceptions;
 using Contacts.Api.Repositories.Abstractions;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Contacts.Api.Repositories;
 
-public class ContactRepository : IContactRepository
+public class ContactRepository(ContactContext context) : IContactRepository
 {
-    private Dictionary<string, Contact> contacts = [];
-    int index = 1;
-
     public async ValueTask DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
-        var contact = await GetSingleAsync(id, cancellationToken)
-            ?? throw new KeyNotFoundException($"Contact with id {id} not found.");
-
-        contacts.Remove(contact.PhoneNumber!);
+        var effectedRows = await context.Contacts
+            .Where(x => x.Id == id)
+            .ExecuteDeleteAsync(cancellationToken);
+        if (effectedRows < 1)
+            throw new CustomNotFoundException($"Contact with id {id} not found");
     }
 
-    public ValueTask<bool> ExistsAsync(string phoneNumber, CancellationToken cancellationToken = default)
-        => ValueTask.FromResult(contacts.ContainsKey(phoneNumber));
+    public async ValueTask<bool> ExistsAsync(string phoneNumber, CancellationToken cancellationToken = default)
+        => await context.Contacts.AnyAsync(q => q.PhoneNumber == phoneNumber, cancellationToken);
 
-    public ValueTask<IEnumerable<Contact>> GetAllAsync(CancellationToken cancellationToken = default)
-        => ValueTask.FromResult(contacts.Values.AsEnumerable());
+    public async ValueTask<IEnumerable<Contact>> GetAllAsync(CancellationToken cancellationToken = default)
+        => await context.Contacts.ToListAsync(cancellationToken);
 
     public async ValueTask<Contact> GetSingleAsync(int id, CancellationToken cancellationToken = default)
         => await GetSingleOrDefaultAsync(id, cancellationToken)
             ?? throw new CustomNotFoundException($"Contact with id {id} not found.");
 
-    public ValueTask<Contact?> GetSingleOrDefaultAsync(int id, CancellationToken cancellationToken = default)
-        => ValueTask.FromResult(contacts.Values.FirstOrDefault(c => c.Id == id));
+    public async ValueTask<Contact?> GetSingleOrDefaultAsync(int id, CancellationToken cancellationToken = default)
+        => await context.Contacts.FindAsync([id], cancellationToken);
 
-    public ValueTask<Contact> InsertAsync(Contact contact, CancellationToken cancellationToken = default)
+    public async ValueTask<Contact> InsertAsync(Contact contact, CancellationToken cancellationToken = default)
     {
-        if (contacts.TryAdd(contact.PhoneNumber!, contact))
+        try
         {
-            contact.Id = index++;
-            return ValueTask.FromResult(contact);
+            contact.CreatedAt = DateTimeOffset.UtcNow;
+            contact.UpdatedAt = DateTimeOffset.UtcNow;
+            var entry = context.Contacts.Add(contact);
+            await context.SaveChangesAsync(cancellationToken);
+            return entry.Entity;
         }
-        else
-            throw new CustomConflictException($"Title musb be unique!");
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: "23505" })
+        {
+            throw new CustomConflictException("PhoneNumber must be unique!");
+        }
     }
 
-    public async ValueTask<Contact> UpdateAsync(int id, Contact contact, CancellationToken cancellationToken = default)
+    public async ValueTask<Contact> UpdateAsync(Contact contact, CancellationToken cancellationToken = default)
     {
-        var found = await GetSingleAsync(id, cancellationToken);
-        contact.Id = found.Id;
-
-        if (found.PhoneNumber != contact.PhoneNumber)
+        try
         {
-            if (contacts.TryAdd(contact.PhoneNumber!, contact))
-                contacts.Remove(found.PhoneNumber!);
-            else
-                throw new CustomConflictException($"Phone number must be unique!");
+            contact.UpdatedAt = DateTimeOffset.UtcNow;
+            await context.SaveChangesAsync(cancellationToken);
         }
-        else
-            contacts[contact.PhoneNumber!] = contact;
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: "23505" })
+        {
+            throw new CustomConflictException("PhoneNumber must be unique!");
+        }
 
         return contact;
     }
@@ -62,29 +65,25 @@ public class ContactRepository : IContactRepository
     public async ValueTask<Contact> PatchAsync(int id, Contact contact, CancellationToken cancellationToken = default)
     {
         var found = await GetSingleAsync(id, cancellationToken);
-        
-        var patchedContact = new Contact
-        {
-            Id = found.Id,
-            FirstName = contact.FirstName ?? found.FirstName,
-            LastName = contact.LastName ?? found.LastName,
-            Email = contact.Email ?? found.Email,
-            PhoneNumber = contact.PhoneNumber ?? found.PhoneNumber,
-            Address = contact.Address ?? found.Address,
-            CreatedAt = found.CreatedAt,
-            UpdatedAt = DateTimeOffset.Now
-        };
+        if (found is null)
+            throw new CustomNotFoundException($"Contact with ID {id} not found.");
 
-        if (found.PhoneNumber != patchedContact.PhoneNumber)
+        found.FirstName = contact.FirstName ?? found.FirstName;
+        found.LastName = contact.LastName ?? found.LastName;
+        found.Email = contact.Email ?? found.Email;
+        found.PhoneNumber = contact.PhoneNumber ?? found.PhoneNumber;
+        found.Address = contact.Address ?? found.Address;
+        found.UpdatedAt = DateTimeOffset.UtcNow;
+
+        try
         {
-            if (contacts.TryAdd(patchedContact.PhoneNumber!, patchedContact))
-                contacts.Remove(found.PhoneNumber!);
-            else
-                throw new CustomConflictException($"Phone number must be unique!");
+            await context.SaveChangesAsync(cancellationToken);
         }
-        else
-            contacts[patchedContact.PhoneNumber!] = patchedContact;
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: "23505" })
+        {
+            throw new CustomConflictException("PhoneNumber must be unique!");
+        }
 
-        return patchedContact;
+        return found;
     }
 }

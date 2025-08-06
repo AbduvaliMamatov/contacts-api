@@ -13,7 +13,7 @@ public interface IContactRepository
 
     ValueTask DeleteAsync(int id, CancellationToken cancellationToken = default);
 
-    ValueTask<Contact> UpdateAsync(int id, Contact contact, CancellationToken cancellationToken = default);
+    ValueTask<Contact> UpdateAsync(Contact contact, CancellationToken cancellationToken = default);
 
     ValueTask<bool> ExistsAsync(string title, CancellationToken cancellationToken = default);
 

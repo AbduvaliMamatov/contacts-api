@@ -7,20 +7,20 @@ Content-Type: application/json
   "firstName": "John",
   "lastName": "Doe",
   "email": "abduvali@gmail.com",
-  "phoneNumber": "+998901234568",
+  "phoneNumber": "+998901234560",
 }
 ###
 
 GET {{Host}}/api/contacts
 ###
 
-GET {{Host}}/api/contacts/1
+GET {{Host}}/api/contacts/4
 ###
 
-DELETE {{Host}}/api/contacts/1
+DELETE {{Host}}/api/contacts/5
 ###
 
-PUT {{Host}}/api/contacts/2
+PUT {{Host}}/api/contacts/8
 Content-Type: application/json
 
 {
@@ -31,7 +31,7 @@ Content-Type: application/json
 }
 ###
 
-PATCH {{Host}}/api/contacts/2
+PATCH {{Host}}/api/contacts/8
 Content-Type: application/json-patch+json
 
 [
