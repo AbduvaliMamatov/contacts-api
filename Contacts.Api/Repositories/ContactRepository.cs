@@ -7,7 +7,7 @@ using Npgsql;
 
 namespace Contacts.Api.Repositories;
 
-public class ContactRepository(ContactContext context) : IContactRepository
+public class ContactRepository(IContactContext context) : IContactRepository
 {
     public async ValueTask DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
@@ -35,10 +35,9 @@ public class ContactRepository(ContactContext context) : IContactRepository
     {
         try
         {
-            contact.CreatedAt = DateTimeOffset.UtcNow;
-            contact.UpdatedAt = DateTimeOffset.UtcNow;
             var entry = context.Contacts.Add(contact);
             await context.SaveChangesAsync(cancellationToken);
+            
             return entry.Entity;
         }
         catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: "23505" })
@@ -51,7 +50,6 @@ public class ContactRepository(ContactContext context) : IContactRepository
     {
         try
         {
-            contact.UpdatedAt = DateTimeOffset.UtcNow;
             await context.SaveChangesAsync(cancellationToken);
         }
         catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: "23505" })

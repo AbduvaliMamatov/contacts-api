@@ -7,27 +7,27 @@ Content-Type: application/json
   "firstName": "John",
   "lastName": "Doe",
   "email": "abduvali@gmail.com",
-  "phoneNumber": "+998901234560",
+  "phoneNumber": "+998901234540",
 }
 ###
 
 GET {{Host}}/api/contacts
 ###
 
-GET {{Host}}/api/contacts/4
+GET {{Host}}/api/contacts/11
 ###
 
-DELETE {{Host}}/api/contacts/5
+DELETE {{Host}}/api/contacts/4
 ###
 
-PUT {{Host}}/api/contacts/8
+PUT {{Host}}/api/contacts/11
 Content-Type: application/json
 
 {
   "firstName": "Abduvali",
   "lastName": "Mamatov",
-  "email": "abduvali@gmail.com",
-  "phoneNumber": "+998901234567",
+  "email": "John@gmail.com",
+  "phoneNumber": "+998901234555",
 }
 ###
 

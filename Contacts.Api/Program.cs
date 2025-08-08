@@ -33,9 +33,11 @@ builder.Services.AddScoped<IValidator<CreateContactDto>, CreateContactValidator>
 builder.Services.AddScoped<IValidator<UpdateContactDto>, UpdateContactValidator>();
 builder.Services.AddScoped<IValidator<PatchContactDto>, PatchContactValidator>();
 
-builder.Services.AddDbContext<ContactContext>(options => options
+builder.Services.AddDbContext<IContactContext, ContactContext>(options => options
     .UseNpgsql(builder.Configuration.GetConnectionString("Contact"))
     .UseSnakeCaseNamingConvention());
+
+builder.Services.AddHostedService<AutoApplyMigrationsService>();
 
 var app = builder.Build();
 
