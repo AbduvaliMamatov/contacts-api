@@ -19,6 +19,7 @@ public class ExceptionHandlingMiddleware(
 
             (int code, string message) = ex switch
             {
+                CustomBadRequestException badRequest => ((int)HttpStatusCode.BadRequest, badRequest.Message),
                 CustomConflictException conflict => ((int)HttpStatusCode.Conflict, conflict.Message),
                 CustomNotFoundException notFound => ((int)HttpStatusCode.NotFound, notFound.Message),
                 _ => ((int)HttpStatusCode.InternalServerError, ex.Message)

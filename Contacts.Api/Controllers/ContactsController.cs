@@ -20,7 +20,7 @@ public class ContactsController(
         )
     {
         var model = mapper.Map<CreateContact>(dto);
-        var created = await service.CreateContactAsync(model, cancellationToken);
+        var created = await  service.CreateContactAsync(model, cancellationToken);
         return Ok(mapper.Map<ContactDto>(created));
     }
 
