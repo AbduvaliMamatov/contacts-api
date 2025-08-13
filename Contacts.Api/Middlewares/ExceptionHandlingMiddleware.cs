@@ -15,7 +15,7 @@ public class ExceptionHandlingMiddleware(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Unhandled exception occured");
+            logger.LogError(ex, "Unhandled exception occurred");
 
             (int code, string message) = ex switch
             {
